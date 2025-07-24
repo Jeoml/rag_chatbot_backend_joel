@@ -10,11 +10,17 @@ import tempfile
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+import uvicorn
+import logging
 
 load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI(title="RAG Chatbot API", version="1.0.0")
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configure CORS
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
@@ -94,10 +100,21 @@ def health_check():
     return {"status": "healthy", "message": "RAG Chatbot API is running"}
 
 @app.get("/health")
-def detailed_health():
+async def detailed_health():
     return {
         "status": "healthy",
         "service": "RAG Chatbot API",
         "version": "1.0.0",
         "environment": os.getenv("ENVIRONMENT", "development")
     }
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Application starting up...")
+    logger.info(f"Environment: {os.getenv('ENVIRONMENT', 'unknown')}")
+    logger.info(f"Port: {os.getenv('PORT', 'unknown')}")
+    logger.info("Startup complete")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
