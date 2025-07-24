@@ -7,15 +7,20 @@ from groq_client import call_groq
 from rag_pipeline import load_pdf, create_vectorstore, query_rag
 from auth import hash_password, verify_password, create_access_token, decode_access_token
 import tempfile
+import os
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
+load_dotenv()
 
 Base.metadata.create_all(bind=engine)
-app = FastAPI()
+app = FastAPI(title="RAG Chatbot API", version="1.0.0")
 
+# Configure CORS
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can restrict to your frontend URL instead of "*"
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -83,3 +88,16 @@ async def chat_pdf(
     vectorstore = create_vectorstore(docs)
     response = query_rag(question, vectorstore)
     return {"response": response}
+
+@app.get("/")
+def health_check():
+    return {"status": "healthy", "message": "RAG Chatbot API is running"}
+
+@app.get("/health")
+def detailed_health():
+    return {
+        "status": "healthy",
+        "service": "RAG Chatbot API",
+        "version": "1.0.0",
+        "environment": os.getenv("ENVIRONMENT", "development")
+    }
