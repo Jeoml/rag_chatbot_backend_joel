@@ -10,4 +10,4 @@ echo "Setting up database..."
 
 # Start the application
 echo "Starting FastAPI server..."
-exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080} --workers ${WORKERS:-1}
+exec uvicorn main:app --host 0.0.0.0 --port 8080 --workers ${WORKERS:-1}
