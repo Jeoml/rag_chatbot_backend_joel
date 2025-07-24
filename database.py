@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import logging
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,7 @@ try:
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
     # Test connection
     with engine.connect() as conn:
-        conn.execute("SELECT 1")
+        conn.execute(text("SELECT 1"))
     logger.info("Database connection successful")
 except SQLAlchemyError as e:
     logger.error(f"Database connection failed: {e}")
@@ -24,3 +25,5 @@ except SQLAlchemyError as e:
 
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+
+
